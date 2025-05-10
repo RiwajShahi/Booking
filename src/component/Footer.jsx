@@ -1,53 +1,117 @@
 import React from 'react';
-import { FaFacebook, FaInstagram, FaLinkedin, FaEnvelope, FaPhone } from 'react-icons/fa'; // Import social and contact icons
+import { Link } from 'react-router-dom';
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, ArrowUp } from 'lucide-react';
 
 const Footer = () => {
-    const facebookUrl ='https://www.facebook.com/riwaj.shahi.thakuri.2025/';
-    const instagramUrl ='https://www.instagram.com/thakuri_riwaj/';
-    const linkedinUrl ='https://www.linkedin.com/in/riwaj-shahi-25333b259/';
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="bg-gray-100 py-12 text-gray-700 border-t border-gray-200">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">House Booking</h4>
-            <p className="text-sm mb-2">
-              Making house party booking easy and fun. Find the perfect space for your next celebration.
-            </p>
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-white">Booking</h3>
             <p className="text-sm">
-              &copy; {new Date().getFullYear()} HouseBooking.com
+              Your trusted platform for finding and booking the perfect venue for any occasion.
             </p>
-          </div>
-          <div>
-            <h4 className="text-md font-semibold text-gray-800 mb-4">Contact Us</h4>
-            <div className="flex items-center mb-2">
-              <FaEnvelope className="mr-2 text-gray-500" size={16} />
-              <a href="mailto:info@yourwebsite.com" className="hover:text-indigo-500 text-sm">HouseBooking.com</a>
-            </div>
-            <div className="flex items-center">
-              <FaPhone className="mr-2 text-gray-500" size={16} />
-              <p className="text-sm">+977 1234567890</p>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-md font-semibold text-gray-800 mb-4">Follow Us</h4>
             <div className="flex space-x-4">
-              <a href={facebookUrl} className="text-gray-500 hover:text-indigo-500" target="_blank" rel="noopener noreferrer">
-                <FaFacebook size={20} />
+              <a href="#" className="hover:text-teal-400 transition-colors">
+                <Facebook className="w-5 h-5" />
               </a>
-              <a href={instagramUrl} className="text-gray-500 hover:text-indigo-500" target="_blank" rel="noopener noreferrer">
-                <FaInstagram size={20} />
+              <a href="#" className="hover:text-teal-400 transition-colors">
+                <Twitter className="w-5 h-5" />
               </a>
-              <a href={linkedinUrl} className="text-gray-500 hover:text-indigo-500" target="_blank" rel="noopener noreferrer">
-                <FaLinkedin size={20} />
+              <a href="#" className="hover:text-teal-400 transition-colors">
+                <Instagram className="w-5 h-5" />
               </a>
-              
             </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Quick Links</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/venues" className="hover:text-teal-400 transition-colors">
+                  Browse Venues
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-teal-400 transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <a href="#" className="hover:text-teal-400 transition-colors">
+                  Terms & Conditions
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-teal-400 transition-colors">
+                  Privacy Policy
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Contact Info</h3>
+            <ul className="space-y-3">
+              <li className="flex items-center space-x-3">
+                <Phone className="w-5 h-5 text-teal-400" />
+                <span>+1 234 567 890</span>
+              </li>
+              <li className="flex items-center space-x-3">
+                <Mail className="w-5 h-5 text-teal-400" />
+                <span>support@booking.com</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-teal-400 mt-1" />
+                <span>123 Booking Street<br />New York, NY 10001</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Newsletter</h3>
+            <p className="text-sm">
+              Subscribe to our newsletter for the latest updates and offers.
+            </p>
+            <form className="space-y-3">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+              <button
+                type="submit"
+                className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors duration-200"
+              >
+                Subscribe
+              </button>
+            </form>
           </div>
         </div>
-        <div className="mt-8 py-4 border-t border-gray-200 text-center text-sm text-gray-600">
-          <a href="/privacy" className="mr-4 hover:text-indigo-500">Privacy Policy</a>
-          <a href="/terms" className="mr-4 hover:text-indigo-500">Terms of Service</a>
+
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-sm">
+              © {new Date().getFullYear()} Booking. All rights reserved.
+            </p>
+            <button
+              onClick={scrollToTop}
+              className="flex items-center space-x-2 text-sm hover:text-teal-400 transition-colors"
+            >
+              <span>Back to Top</span>
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

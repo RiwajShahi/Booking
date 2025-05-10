@@ -1,81 +1,134 @@
-import React from 'react';
-import { User, Lock } from 'lucide-react';
-import {Link} from 'react-router-dom';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-
+import { Mail, Lock } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
+  // Get the redirect path from location state, or default to home
+  const from = location.state?.from?.pathname || '/';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      // Here you would typically make an API call to verify credentials
+      // For now, we'll just simulate a successful login
+      const userData = {
+        email,
+        id: '1', // This would come from your backend
+        name: email.split('@')[0], // This would come from your backend
+      };
+      
+      login(userData);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError('Invalid email or password');
+    }
+  };
+
   return (
-    <motion.div
-      className="w-full min-h-screen flex items-center justify-center"
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeIn' }}
-    >
-{/*-------------bg img-----------*/}
-        <form className='bg-white/80  shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md'>
-        <h2 className="text-2xl font-bold mb-6 text-center text-black-700">House Booking</h2>
-            
-            <div className='mb-4'>
-                <label className='block text-black-700 text-sm font-bold mb-2' htmlFor='username'>
-                    Username
-                </label>
-                <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black-400" />
-                    <input
-                        className='shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-black-700 leading-tight focus:outline-none focus:shadow-outline'
-                        id="username"
-                        type="text"
-                        placeholder="Username"
-                    />
-                </div>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <img 
+        src="/images/bgHouse.jpg"
+        alt="Background"
+        className="absolute inset-0 w-full h-full object-cover"
+        onError={(e) => {
+          console.error('Error loading image:', e);
+          e.target.style.display = 'none';
+        }}
+      />
+      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-lg relative z-10"
+      >
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{' '}
+            <Link to="/signUp" className="font-medium text-teal-600 hover:text-teal-500">
+              create a new account
+            </Link>
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <div className="rounded-md shadow-sm space-y-4">
+            <div className="relative group">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-teal-500 transition-colors duration-200" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="Email address"
+              />
             </div>
 
+            <div className="relative group">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-teal-500 transition-colors duration-200" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="Password"
+              />
+            </div>
+          </div>
 
-            <div className='mb-6'>
-                <label className='block text-black-700 text-sm font-bold mb-2' htmlFor='password'>
-                    Password
-                </label>
-                <div className='relative'>
-                    <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black-400'/>
-                    <input 
-                        className='shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-black-700 leading-tight focus:outline-none focus:shadow-outline'
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                    />
-                </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                Remember me
+              </label>
             </div>
 
-            
-            <div className='flex items-center justify-between mb-6'>
-                <button 
-                    className='bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-                    type="submit"
-                >
-                    Sign In
-                </button>
-                <a 
-                    className='inline-block align-baseline text-sm  text-teal-800 font-semibold hover:underline'
-                    href="#"
-                >
-                    Forgot password?
-                </a>
+            <div className="text-sm">
+              <a href="#" className="font-medium text-teal-600 hover:text-teal-500">
+                Forgot your password?
+              </a>
             </div>
+          </div>
 
-            <div className='text-center'>
-                <span className='text-sm'>Don't have an account? </span>
-                <Link 
-                    to="/SignUp"
-                    className='font-bold text-sm text-teal-800 hover:underline'
-                >
-                    Sign Up
-                </Link>
-            </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200"
+          >
+            Sign in
+          </motion.button>
         </form>
-   
-    </motion.div>
-  )
-}
+      </motion.div>
+    </div>
+  );
+};
 
 export default LoginPage;

@@ -1,31 +1,64 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
-const Hero = ({ title, subtitle, image, buttonText, onButtonClick }) => {
+const Hero = () => {
   return (
-    <section className="bg-gray-100 py-40 relative overflow-hidden">
-      {image && (
-        <div
-          className="absolute inset-0 bg-cover bg-center blur-sm"
-          style={{ backgroundImage: `url(${image})` }}
-        ></div>
-      )}
-      <div className="container mx-auto text-center relative z-10">
-        {title && (
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">{title}</h1>
-        )}
-        {subtitle && (
-          <p className="text-lg text-gray-600 mb-8">{subtitle}</p>
-        )}
-        {buttonText && onButtonClick && (
-          <button
-            className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline"
-            onClick={onButtonClick}
+    <div className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center" 
+         style={{ backgroundImage: "url('/hero-bg.jpg')" }}>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50"></div>
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-12"
+        >
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+            Find Your Perfect Venue
+          </h1>
+          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+            Discover and book amazing venues for your next event. From intimate gatherings to grand celebrations.
+          </p>
+
+          {/* Book Now Button */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-teal-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-teal-700 transition-colors duration-200 flex items-center space-x-2 mx-auto group"
           >
-            {buttonText}
-          </button>
-        )}
+            <span>Book Now</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+          </motion.button>
+        </motion.div>
+
+        {/* Popular Searches */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-8"
+        >
+          <p className="text-gray-200 mb-2">Popular Searches:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {['Wedding Venues', 'Conference Rooms', 'Party Halls', 'Restaurants'].map((tag) => (
+              <button
+                key={tag}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm transition-colors duration-200"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </motion.div>
       </div>
-    </section>
+    </div>
   );
 };
 
