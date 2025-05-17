@@ -1,13 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import hero from '../assets/images/hero.jpg'; 
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  
+  const navigate = useNavigate();
+
+  const handleBookNow = () => {
+    navigate('/venues');
+  };
+
   return (
     <div className="relative min-h-[600px] flex items-center justify-center bg-cover bg-center" 
-         style={{ backgroundImage: "url('/hero-bg.jpg')" }}>
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50"></div>
+         style={{ backgroundImage: `url(${hero})` }}>
+      
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
@@ -26,12 +34,9 @@ const Hero = () => {
 
           {/* Book Now Button */}
           <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-teal-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-teal-700 transition-colors duration-200 flex items-center space-x-2 mx-auto group"
+            onClick={handleBookNow}
+            
+            className="bg-red-500 animate-bounce text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-red-800 transition-colors duration-200 flex items-center space-x-2 mx-auto group"
           >
             <span>Book Now</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
@@ -47,7 +52,7 @@ const Hero = () => {
         >
           <p className="text-gray-200 mb-2">Popular Searches:</p>
           <div className="flex flex-wrap justify-center gap-2">
-            {['Wedding Venues', 'Conference Rooms', 'Party Halls', 'Restaurants'].map((tag) => (
+            {['Pokhara', 'Kathmandu', 'Chitwan', 'Lumbini'].map((tag) => (
               <button
                 key={tag}
                 className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-sm transition-colors duration-200"

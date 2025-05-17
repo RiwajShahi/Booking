@@ -63,7 +63,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#232946] pt-24 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -71,10 +71,10 @@ const Profile = () => {
           className="bg-white rounded-2xl shadow-lg overflow-hidden"
         >
           {/* Profile Header */}
-          <div className="relative h-48 bg-gradient-to-r from-teal-500 to-blue-500">
+          <div className="relative h-48 bg-gradient-to-r from-slate-800 to-slate-700">
             <div className="absolute -bottom-16 left-8">
               <div className="w-32 h-32 rounded-full border-4 border-white bg-white overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-r from-teal-500 to-blue-500 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-r from-sky-500 to-sky-600 flex items-center justify-center">
                   <User className="w-16 h-16 text-white" />
                 </div>
               </div>
@@ -98,56 +98,56 @@ const Profile = () => {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
-                      <User className="w-5 h-5 text-teal-600" />
+                      <User className="w-5 h-5 text-sky-600" />
                       {isEditing ? (
                         <input
                           type="text"
                           name="name"
                           value={editedUser.name}
                           onChange={handleInputChange}
-                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                         />
                       ) : (
                         <span className="text-gray-700">{user?.name || 'Not provided'}</span>
                       )}
                     </div>
                     <div className="flex items-center space-x-3">
-                      <Mail className="w-5 h-5 text-teal-600" />
+                      <Mail className="w-5 h-5 text-sky-600" />
                       {isEditing ? (
                         <input
                           type="email"
                           name="email"
                           value={editedUser.email}
                           onChange={handleInputChange}
-                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                         />
                       ) : (
                         <span className="text-gray-700">{user?.email || 'Not provided'}</span>
                       )}
                     </div>
                     <div className="flex items-center space-x-3">
-                      <Phone className="w-5 h-5 text-teal-600" />
+                      <Phone className="w-5 h-5 text-sky-600" />
                       {isEditing ? (
                         <input
                           type="tel"
                           name="phone"
                           value={editedUser.phone}
                           onChange={handleInputChange}
-                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                         />
                       ) : (
                         <span className="text-gray-700">{user?.phone || 'Not provided'}</span>
                       )}
                     </div>
                     <div className="flex items-center space-x-3">
-                      <MapPin className="w-5 h-5 text-teal-600" />
+                      <MapPin className="w-5 h-5 text-sky-600" />
                       {isEditing ? (
                         <input
                           type="text"
                           name="address"
                           value={editedUser.address}
                           onChange={handleInputChange}
-                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                         />
                       ) : (
                         <span className="text-gray-700">{user?.address || 'Not provided'}</span>
@@ -205,7 +205,7 @@ const Profile = () => {
                         checked={editedUser.preferences.notifications}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="h-4 w-4 text-teal-600 focus:ring-teal-500"
+                        className="h-4 w-4 text-sky-600 focus:ring-sky-500"
                       />
                       <span className="text-gray-700">Email Notifications</span>
                     </label>
@@ -216,7 +216,7 @@ const Profile = () => {
                         checked={editedUser.preferences.newsletter}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="h-4 w-4 text-teal-600 focus:ring-teal-500"
+                        className="h-4 w-4 text-sky-600 focus:ring-sky-500"
                       />
                       <span className="text-gray-700">Newsletter Subscription</span>
                     </label>
@@ -227,7 +227,7 @@ const Profile = () => {
                         value={editedUser.preferences.language}
                         onChange={handleInputChange}
                         disabled={!isEditing}
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                       >
                         <option value="English">English</option>
                         <option value="Nepali">Nepali</option>
@@ -241,15 +241,15 @@ const Profile = () => {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
                   <div className="space-y-4">
                     <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Building2 className="w-5 h-5 text-teal-600" />
+                      <Building2 className="w-5 h-5 text-sky-600" />
                       <span className="text-gray-700">View My Venues</span>
                     </button>
                     <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <CreditCard className="w-5 h-5 text-teal-600" />
+                      <CreditCard className="w-5 h-5 text-sky-600" />
                       <span className="text-gray-700">Payment Methods</span>
                     </button>
                     <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Settings className="w-5 h-5 text-teal-600" />
+                      <Settings className="w-5 h-5 text-sky-600" />
                       <span className="text-gray-700">Account Settings</span>
                     </button>
                   </div>
@@ -261,7 +261,7 @@ const Profile = () => {
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleSave}
-                  className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2"
+                  className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors flex items-center space-x-2"
                 >
                   <Save className="w-5 h-5" />
                   <span>Save Changes</span>

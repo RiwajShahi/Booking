@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Clock
+  Clock,
+  Check
 } from 'lucide-react';
 import Reviews from './Reviews';
 
@@ -29,8 +30,6 @@ const VenueDetails = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [bookingData, setBookingData] = useState({
     date: '',
-    startTime: '',
-    endTime: '',
     guests: '',
     paymentMethod: ''
   });
@@ -121,8 +120,15 @@ const VenueDetails = () => {
     setIsSubmitting(true);
 
     try {
+      // Check if user is authenticated
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login', { state: { from: `/venues/${id}` } });
+        return;
+      }
+
       // Validate booking data
-      if (!bookingData.date || !bookingData.startTime || !bookingData.endTime || !bookingData.guests) {
+      if (!bookingData.date || !bookingData.guests) {
         throw new Error('Please fill in all required fields');
       }
 
@@ -133,14 +139,6 @@ const VenueDetails = () => {
       
       if (selectedDate < today) {
         throw new Error('Please select a future date');
-      }
-
-      // Validate time range
-      const start = new Date(`2000-01-01T${bookingData.startTime}`);
-      const end = new Date(`2000-01-01T${bookingData.endTime}`);
-      
-      if (end <= start) {
-        throw new Error('End time must be after start time');
       }
 
       // Validate guest count
@@ -165,12 +163,18 @@ const VenueDetails = () => {
       setBookingSuccess(true);
       setBookingData({
         date: '',
-        startTime: '',
-        endTime: '',
         guests: '',
         paymentMethod: ''
       });
       setShowPayment(false);
+
+      // Dispatch custom event for notification
+      window.dispatchEvent(new CustomEvent('venueBooked', {
+        detail: {
+          venue: venue.name,
+          date: bookingData.date
+        }
+      }));
 
       // Reset success message after 3 seconds
       setTimeout(() => {
@@ -236,25 +240,25 @@ const VenueDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#232946]">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white border-b">
+      <div className="sticky top-0 z-50 bg-[#2d3450] border-b border-teal-700/40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-[#232946] rounded-full transition-colors"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => setIsFavorite(!isFavorite)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-[#232946] rounded-full transition-colors"
             >
-              <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+              <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-300'}`} />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Share2 className="w-6 h-6 text-gray-600" />
+            <button className="p-2 hover:bg-[#232946] rounded-full transition-colors">
+              <Share2 className="w-6 h-6 text-gray-300" />
             </button>
           </div>
         </div>
@@ -322,74 +326,237 @@ const VenueDetails = () => {
         <AnimatePresence>
           {showFullGallery && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setShowFullGallery(false);
-                }
-              }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#2d3450] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
             >
-              <div className="relative w-full max-w-7xl">
+              <div className="relative">
+                <img
+                  src={venue.images[currentImageIndex]}
+                  alt={venue.name}
+                  className="w-full h-64 object-cover rounded-t-2xl"
+                />
                 <button
                   onClick={() => setShowFullGallery(false)}
-                  className="absolute -top-16 right-0 p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors text-white flex items-center space-x-2"
+                  className="absolute top-4 right-4 bg-[#232946]/90 backdrop-blur-sm p-2 rounded-full hover:bg-[#232946] transition-colors duration-200"
                 >
-                  <X className="w-6 h-6" />
-                  <span className="text-sm">Close Gallery</span>
+                  <X className="w-6 h-6 text-white" />
                 </button>
-                
-                <div className="relative aspect-[16/9] rounded-2xl overflow-hidden mb-6">
-                  <img 
-                    src={imageError[currentImageIndex] ? '/images/placeholder.jpg' : venue.images[currentImageIndex]} 
-                    alt={venue.name}
-                    onError={() => handleImageError(currentImageIndex)}
-                    className="w-full h-full object-contain"
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFavorite(!isFavorite);
+                  }}
+                  className="absolute top-4 left-4 p-2 bg-[#232946]/90 backdrop-blur-sm rounded-full hover:bg-[#232946] transition-colors duration-200"
+                >
+                  <Heart
+                    className={`w-6 h-6 ${
+                      isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'
+                    }`}
                   />
-                  <div className="absolute inset-0 flex items-center justify-between px-4">
-                    <button 
-                      onClick={prevImage}
-                      className="p-3 bg-white/90 rounded-full hover:bg-white transition-colors shadow-lg"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <button 
-                      onClick={nextImage}
-                      className="p-3 bg-white/90 rounded-full hover:bg-white transition-colors shadow-lg"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
+                </button>
+              </div>
+
+              <div className="p-8">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">{venue.name}</h2>
+                    <div className="flex items-center text-gray-300">
+                      <MapPin className="w-5 h-5 mr-2 text-teal-400" />
+                      <span>{venue.location}</span>
+                    </div>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-                    Image {currentImageIndex + 1} of {venue.images.length}
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-teal-400">${venue.price}/hour</div>
+                    <div className="flex items-center justify-end text-gray-300">
+                      <Star className="w-5 h-5 mr-1 text-yellow-400" />
+                      <span>{venue.rating} Rating</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-6">
-                  {venue.images.map((image, index) => (
-                    <motion.div
-                      key={index}
-                      whileHover={{ scale: 1.05 }}
-                      className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer ${
-                        index === currentImageIndex ? 'ring-2 ring-teal-500' : ''
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                    >
-                      <img 
-                        src={imageError[index] ? '/images/placeholder.jpg' : image} 
-                        alt={`${venue.name} - Image ${index + 1}`}
-                        onError={() => handleImageError(index)}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-300">
-                        <div className="absolute bottom-2 left-2 text-white text-xs">
-                          Image {index + 1}
+                <p className="text-gray-300 mb-8">{venue.description}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-4">Features</h3>
+                    <div className="space-y-3">
+                      {venue.features.map((feature, index) => (
+                        <div key={index} className="flex items-center text-gray-300">
+                          <Check className="w-5 h-5 mr-2 text-teal-400" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-4">Contact Information</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center text-gray-300">
+                        <Phone className="w-5 h-5 mr-2 text-teal-400" />
+                        <span>{venue.contact.phone}</span>
+                      </div>
+                      <div className="flex items-center text-gray-300">
+                        <Mail className="w-5 h-5 mr-2 text-teal-400" />
+                        <span>{venue.contact.email}</span>
+                      </div>
+                      <div className="flex items-center text-gray-300">
+                        <Users className="w-5 h-5 mr-2 text-teal-400" />
+                        <span>Capacity: {venue.capacity} people</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <form onSubmit={handleBookingSubmit} className="space-y-4">
+                    {bookingError && (
+                      <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
+                        {bookingError}
+                      </div>
+                    )}
+                    {paymentError && (
+                      <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
+                        {paymentError}
+                      </div>
+                    )}
+                    {bookingSuccess && (
+                      <div className="bg-green-900/50 border border-green-700 text-green-200 px-4 py-3 rounded-lg">
+                        Venue reserved successfully!
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                        <input
+                          type="date"
+                          name="date"
+                          value={bookingData.date}
+                          onChange={handleBookingChange}
+                          min={new Date().toISOString().split('T')[0]}
+                          required
+                          className="w-full px-4 py-2 bg-[#232946] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Number of Guests</label>
+                        <input
+                          type="number"
+                          name="guests"
+                          value={bookingData.guests}
+                          onChange={handleBookingChange}
+                          min="1"
+                          max={venue.capacity}
+                          required
+                          className="w-full px-4 py-2 bg-[#232946] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+
+                    {showPayment && (
+                      <div className="space-y-4 pt-4 border-t border-gray-700">
+                        <h4 className="font-semibold text-white">Payment Method</h4>
+                        <div className="space-y-3">
+                          <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="esewa"
+                              checked={bookingData.paymentMethod === 'esewa'}
+                              onChange={handleBookingChange}
+                              className="h-4 w-4 text-teal-400 focus:ring-teal-500"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <img src="/images/esewa.png" alt="eSewa" className="h-6" />
+                              <span className="text-gray-300">eSewa</span>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="khalti"
+                              checked={bookingData.paymentMethod === 'khalti'}
+                              onChange={handleBookingChange}
+                              className="h-4 w-4 text-teal-400 focus:ring-teal-500"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <img src="/images/khalti.png" alt="Khalti" className="h-6" />
+                              <span className="text-gray-300">Khalti</span>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="connectips"
+                              checked={bookingData.paymentMethod === 'connectips'}
+                              onChange={handleBookingChange}
+                              className="h-4 w-4 text-teal-400 focus:ring-teal-500"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <img src="/images/connectips.png" alt="ConnectIPS" className="h-6" />
+                              <span className="text-gray-300">ConnectIPS</span>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="cash"
+                              checked={bookingData.paymentMethod === 'cash'}
+                              onChange={handleBookingChange}
+                              className="h-4 w-4 text-teal-400 focus:ring-teal-500"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <span className="text-gray-300">Cash on Arrival</span>
+                            </div>
+                          </label>
+                        </div>
+
+                        <div className="bg-[#232946] p-4 rounded-lg border border-gray-700">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-gray-300">Venue Price</span>
+                            <span className="font-medium text-white">{venue.price}</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-gray-300">Service Charge</span>
+                            <span className="font-medium text-white">{(venue.price * 0.1).toFixed(2)}</span>
+                          </div>
+                          <div className="border-t border-gray-700 pt-2 mt-2">
+                            <div className="flex justify-between font-semibold text-white">
+                              <span>Total Amount</span>
+                              <span>{(venue.price * 1.1).toFixed(2)}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </motion.div>
-                  ))}
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </>
+                      ) : showPayment ? (
+                        'Complete Reservation'
+                      ) : (
+                        'Reserve Now'
+                      )}
+                    </button>
+                  </form>
                 </div>
               </div>
             </motion.div>
@@ -402,8 +569,8 @@ const VenueDetails = () => {
           <div className="lg:col-span-2">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{venue.name}</h1>
-                <div className="flex items-center space-x-4 text-gray-600">
+                <h1 className="text-3xl font-bold text-white mb-2">{venue.name}</h1>
+                <div className="flex items-center space-x-4 text-gray-300">
                   <div className="flex items-center">
                     <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                     <span className="ml-1">{venue.rating}</span>
@@ -411,67 +578,67 @@ const VenueDetails = () => {
                     <span>{venue.reviews} reviews</span>
                   </div>
                   <div className="flex items-center">
-                    <MapPin className="w-5 h-5" />
+                    <MapPin className="w-5 h-5 text-teal-400" />
                     <span className="ml-1">{venue.location}</span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-gray-900">${venue.price}</p>
-                <p className="text-gray-600">per event</p>
+                <p className="text-2xl font-bold text-teal-400">{venue.price}</p>
+                <p className="text-gray-300">per event</p>
               </div>
             </div>
 
-            <div className="border-t border-b py-8 my-8">
+            <div className="border-t border-b border-gray-700 py-8 my-8">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center space-x-2">
-                  <Users className="w-6 h-6 text-gray-600" />
+                  <Users className="w-6 h-6 text-teal-400" />
                   <div>
-                    <p className="text-sm text-gray-600">Capacity</p>
-                    <p className="font-semibold">{venue.capacity} people</p>
+                    <p className="text-sm text-gray-300">Capacity</p>
+                    <p className="font-semibold text-white">{venue.capacity} people</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Calendar className="w-6 h-6 text-gray-600" />
+                  <Calendar className="w-6 h-6 text-teal-400" />
                   <div>
-                    <p className="text-sm text-gray-600">Available Dates</p>
-                    <p className="font-semibold">{venue.availableDates.length} dates</p>
+                    <p className="text-sm text-gray-300">Available Dates</p>
+                    <p className="font-semibold text-white">{venue.availableDates.length} dates</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this venue</h2>
-              <p className="text-gray-600 leading-relaxed">{venue.description}</p>
+              <h2 className="text-2xl font-bold text-white mb-4">About this venue</h2>
+              <p className="text-gray-300 leading-relaxed">{venue.description}</p>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Features</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Features</h2>
               <div className="grid grid-cols-2 gap-4">
                 {venue.features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     {feature === 'WiFi' ? (
-                      <Wifi className="w-6 h-6 text-gray-600" />
+                      <Wifi className="w-6 h-6 text-teal-400" />
                     ) : (
-                      <Music className="w-6 h-6 text-gray-600" />
+                      <Music className="w-6 h-6 text-teal-400" />
                     )}
-                    <span className="text-gray-600">{feature}</span>
+                    <span className="text-gray-300">{feature}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact Information</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Contact Information</h2>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
-                  <Phone className="w-6 h-6 text-gray-600" />
-                  <span className="text-gray-600">{venue.contact.phone}</span>
+                  <Phone className="w-6 h-6 text-teal-400" />
+                  <span className="text-gray-300">{venue.contact.phone}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Mail className="w-6 h-6 text-gray-600" />
-                  <span className="text-gray-600">{venue.contact.email}</span>
+                  <Mail className="w-6 h-6 text-teal-400" />
+                  <span className="text-gray-300">{venue.contact.email}</span>
                 </div>
               </div>
             </div>
@@ -479,26 +646,26 @@ const VenueDetails = () => {
 
           {/* Right Column - Booking Form */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-2xl border p-6 shadow-lg">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Book this venue</h3>
+            <div className="sticky top-24 bg-[#2d3450] rounded-2xl border border-teal-700/40 p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-white mb-4">Book this venue</h3>
               <form onSubmit={handleBookingSubmit} className="space-y-4">
                 {bookingError && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                  <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
                     {bookingError}
                   </div>
                 )}
                 {paymentError && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                  <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
                     {paymentError}
                   </div>
                 )}
                 {bookingSuccess && (
-                  <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg">
+                  <div className="bg-green-900/50 border border-green-700 text-green-200 px-4 py-3 rounded-lg">
                     Venue reserved successfully!
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
                   <input
                     type="date"
                     name="date"
@@ -506,35 +673,11 @@ const VenueDetails = () => {
                     onChange={handleBookingChange}
                     min={new Date().toISOString().split('T')[0]}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-[#232946] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                    <input
-                      type="time"
-                      name="startTime"
-                      value={bookingData.startTime}
-                      onChange={handleBookingChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                    <input
-                      type="time"
-                      name="endTime"
-                      value={bookingData.endTime}
-                      onChange={handleBookingChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Number of Guests</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Number of Guests</label>
                   <input
                     type="number"
                     name="guests"
@@ -543,90 +686,60 @@ const VenueDetails = () => {
                     min="1"
                     max={venue.capacity}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-[#232946] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-400 mt-1">
                     Maximum capacity: {venue.capacity} guests
                   </p>
                 </div>
 
                 {showPayment && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <h4 className="font-semibold text-gray-900">Payment Method</h4>
+                  <div className="space-y-4 pt-4 border-t border-gray-700">
+                    <h4 className="font-semibold text-white">Payment Method</h4>
                     <div className="space-y-3">
-                      <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="esewa"
-                          checked={bookingData.paymentMethod === 'esewa'}
-                          onChange={handleBookingChange}
-                          className="h-4 w-4 text-teal-600 focus:ring-teal-500"
-                        />
-                        <div className="flex items-center space-x-2">
-                          <img src="/images/esewa.png" alt="eSewa" className="h-6" />
-                          <span className="text-gray-700">eSewa</span>
-                        </div>
-                      </label>
-
-                      <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="khalti"
-                          checked={bookingData.paymentMethod === 'khalti'}
-                          onChange={handleBookingChange}
-                          className="h-4 w-4 text-teal-600 focus:ring-teal-500"
-                        />
-                        <div className="flex items-center space-x-2">
-                          <img src="/images/khalti.png" alt="Khalti" className="h-6" />
-                          <span className="text-gray-700">Khalti</span>
-                        </div>
-                      </label>
-
-                      <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
                         <input
                           type="radio"
                           name="paymentMethod"
                           value="connectips"
                           checked={bookingData.paymentMethod === 'connectips'}
                           onChange={handleBookingChange}
-                          className="h-4 w-4 text-teal-600 focus:ring-teal-500"
+                          className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                         />
                         <div className="flex items-center space-x-2">
                           <img src="/images/connectips.png" alt="ConnectIPS" className="h-6" />
-                          <span className="text-gray-700">ConnectIPS</span>
+                          <span className="text-gray-300">ConnectIPS</span>
                         </div>
                       </label>
 
-                      <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
                         <input
                           type="radio"
                           name="paymentMethod"
                           value="cash"
                           checked={bookingData.paymentMethod === 'cash'}
                           onChange={handleBookingChange}
-                          className="h-4 w-4 text-teal-600 focus:ring-teal-500"
+                          className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                         />
                         <div className="flex items-center space-x-2">
-                          <span className="text-gray-700">Cash on Arrival</span>
+                          <span className="text-gray-300">Cash on Arrival</span>
                         </div>
                       </label>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="bg-[#232946] p-4 rounded-lg border border-gray-700">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Venue Price</span>
-                        <span className="font-medium">Rs. {venue.price}</span>
+                        <span className="text-gray-300">Venue Price</span>
+                        <span className="font-medium text-white">{venue.price}</span>
                       </div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Service Charge</span>
-                        <span className="font-medium">Rs. {(venue.price * 0.1).toFixed(2)}</span>
+                        <span className="text-gray-300">Service Charge</span>
+                        <span className="font-medium text-white">{(venue.price * 0.1).toFixed(2)}</span>
                       </div>
-                      <div className="border-t pt-2 mt-2">
-                        <div className="flex justify-between font-semibold">
+                      <div className="border-t border-gray-700 pt-2 mt-2">
+                        <div className="flex justify-between font-semibold text-white">
                           <span>Total Amount</span>
-                          <span>Rs. {(venue.price * 1.1).toFixed(2)}</span>
+                          <span>{(venue.price * 1.1).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>

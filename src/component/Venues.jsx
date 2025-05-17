@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Star, X, Phone, Mail, Check, Heart } from 'lucide-react';
+import { MapPin, Users, Star, X, Phone, Mail, Check, Heart, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import bhaktapur from '../assets/images/bhaktapur.jpg';
 
 const Venues = () => {
   const [selectedVenue, setSelectedVenue] = useState(null);
@@ -17,6 +19,8 @@ const Venues = () => {
   const [paymentError, setPaymentError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  const navigate = useNavigate();
 
   const toggleFavorite = (venueId) => {
     setFavorites(prev => 
@@ -125,109 +129,78 @@ const Venues = () => {
     {
       id: 1,
       name: "Grand Ballroom",
-      location: "Kathmandu, Nepal",
-      price: 150,
+      location: "Kathmandu",
       rating: 4.8,
       capacity: 500,
-      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80",
-      description: "A luxurious ballroom perfect for large events, weddings, and corporate gatherings. Features state-of-the-art lighting and sound systems.",
-      features: ["Professional Sound System", "LED Lighting", "Catering Kitchen", "Parking Space", "WiFi", "Air Conditioning"],
-      phone: "+977 1234567890",
-      email: "info@grandballroom.com"
+      price: "Rs. 50,000",
+      image: bhaktapur,
+      description: "Elegant venue perfect for large gatherings and celebrations."
     },
     {
       id: 2,
       name: "Garden Pavilion",
-      location: "Lalitpur, Nepal",
-      price: 100,
-      rating: 4.6,
-      capacity: 200,
-      image: "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      description: "An elegant outdoor venue surrounded by beautiful gardens, perfect for intimate gatherings and outdoor events.",
-      features: ["Garden Setting", "Outdoor Catering", "Tent Options", "Parking", "Restrooms", "Power Supply"],
-      phone: "+977 1234567891",
-      email: "info@gardenpavilion.com"
+      location: "Pokhara",
+      rating: 4.9,
+      capacity: 300,
+      price: "Rs. 35,000",
+      image: "/images/venue2.jpg",
+      description: "Beautiful outdoor venue with stunning mountain views."
     },
     {
       id: 3,
-      name: "Modern Conference Hall",
-      location: "Bhaktapur, Nepal",
-      price: 120,
+      name: "Skyline Terrace",
+      location: "Bhaktapur",
       rating: 4.7,
-      capacity: 300,
-      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80",
-      description: "A contemporary conference hall equipped with modern technology, ideal for business meetings and presentations.",
-      features: ["Projector", "Video Conferencing", "High-Speed WiFi", "Catering Service", "Parking", "Air Conditioning"],
-      phone: "+977 1234567892",
-      email: "info@modernconference.com"
+      capacity: 200,
+      price: "Rs. 25,000",
+      image: "/images/venue3.jpg",
+      description: "Modern rooftop venue with panoramic city views."
     }
   ];
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Venues</h2>
-          <p className="text-lg text-gray-600">Discover our handpicked selection of premium venues</p>
-        </motion.div>
+    <section className="py-16 ">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent mb-4">
+            Featured Venues
+          </h2>
+          <p className="text-lg text-white">Discover our most popular venues</p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {venues.map((venue, index) => (
-            <motion.div
+          {venues.map((venue) => (
+            <div
               key={venue.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-              onClick={() => setSelectedVenue(venue)}
+              className="bg-[#2d3450] rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-teal-700/40 cursor-pointer"
+              onClick={() => navigate(`/venues/${venue.id}`)}
             >
-              <div className="relative h-64">
+              <div className="relative h-48">
                 <img
                   src={venue.image}
                   alt={venue.name}
                   className="w-full h-full object-cover"
+                  loading="eager"
                 />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                  <span className="text-teal-600 font-semibold">${venue.price}/hour</span>
+                <div className="absolute top-4 right-4 bg-[#232946]/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    <span className="text-sm font-semibold text-white">{venue.rating}</span>
+                  </div>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(venue.id);
-                  }}
-                  className="absolute top-4 left-4 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200"
-                >
-                  <Heart
-                    className={`w-6 h-6 ${
-                      favorites.includes(venue.id)
-                        ? 'text-red-500 fill-red-500'
-                        : 'text-gray-400'
-                    }`}
-                  />
-                </button>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{venue.name}</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="w-5 h-5 mr-2 text-teal-600" />
+                <h3 className="text-xl font-bold text-white mb-2">{venue.name}</h3>
+                <p className="text-gray-300 mb-4">{venue.description}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center text-gray-300">
+                    <MapPin className="w-5 h-5 mr-2" />
                     <span>{venue.location}</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <Users className="w-5 h-5 mr-2 text-teal-600" />
-                    <span>Capacity: {venue.capacity} people</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Star className="w-5 h-5 mr-2 text-yellow-400" />
-                    <span>{venue.rating} Rating</span>
-                  </div>
+                  <p className="text-xl font-bold text-teal-400">{venue.price}</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -375,30 +348,6 @@ const Venues = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                          <input
-                            type="time"
-                            name="startTime"
-                            value={bookingData.startTime}
-                            onChange={handleBookingChange}
-                            required
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                          <input
-                            type="time"
-                            name="endTime"
-                            value={bookingData.endTime}
-                            onChange={handleBookingChange}
-                            required
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
 
                       {showPayment && (
                         <div className="space-y-4 pt-4 border-t">

@@ -21,6 +21,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
+  const updateUserProfile = (profileData) => {
+    const updatedUser = { ...user, ...profileData, isOnboarded: true };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   // Optional: Check if the user session is still valid
   useEffect(() => {
     const checkAuth = async () => {
@@ -40,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
@@ -52,4 +58,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
