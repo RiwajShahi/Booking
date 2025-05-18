@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Heart, 
-  Share2, 
-  Star, 
-  MapPin, 
-  Users, 
-  Calendar, 
-  Wifi, 
-  Music, 
-  Phone, 
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Heart,
+  Share2,
+  Star,
+  MapPin,
+  Users,
+  Calendar,
+  Wifi,
+  Music,
+  Phone,
   Mail,
   ChevronLeft,
   ChevronRight,
   X,
   Clock,
-  Check
-} from 'lucide-react';
-import Reviews from './Reviews';
+  Check,
+  MessageSquare,
+} from "lucide-react";
+import Reviews from "./Reviews";
 
 const VenueDetails = () => {
   const { id } = useParams();
@@ -29,53 +30,65 @@ const VenueDetails = () => {
   const [loading, setLoading] = useState(true);
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [bookingData, setBookingData] = useState({
-    date: '',
-    guests: '',
-    paymentMethod: ''
+    date: "",
+    guests: "",
+    paymentMethod: "",
   });
-  const [bookingError, setBookingError] = useState('');
+  const [bookingError, setBookingError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [imageError, setImageError] = useState({});
   const [showPayment, setShowPayment] = useState(false);
-  const [paymentError, setPaymentError] = useState('');
+  const [paymentError, setPaymentError] = useState("");
 
   useEffect(() => {
     const fetchVenue = async () => {
       try {
         setLoading(true);
-        setError('');
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock venue data
-        setVenue({
-          id: 1,
-          name: 'Grand Ballroom',
-          rating: 4.8,
-          reviews: 156,
-          location: '123 Main Street, City',
-          price: 2500,
-          capacity: 300,
-          availableDates: ['2024-04-01', '2024-04-15', '2024-05-01'],
-          description: 'A stunning venue perfect for weddings, corporate events, and special occasions. Features include a grand entrance, high ceilings, and state-of-the-art facilities.',
-          features: ['WiFi', 'Parking', 'Catering', 'Audio/Visual', 'Outdoor Space'],
-          contact: {
-            phone: '+1 (555) 123-4567',
-            email: 'info@grandballroom.com'
-          },
-          images: [
-            '/images/venue1.jpg',
-            '/images/venue2.jpg',
-            '/images/venue3.jpg',
-            '/images/venue4.jpg',
-            '/images/venue5.jpg'
-          ]
-        });
+        setError("");
+
+        // Get venues from localStorage
+        const storedVenues = localStorage.getItem("venues");
+        if (!storedVenues) {
+          setError("No venues found.");
+          setLoading(false);
+          return;
+        }
+
+        const venues = JSON.parse(storedVenues);
+
+        // Find the venue that matches the ID from the URL
+        const foundVenue = venues.find((v) => v.id === parseInt(id)); // Assuming ID is a number
+
+        if (foundVenue) {
+          // Construct the location string
+          const locationString = `${foundVenue.address}, ${foundVenue.city}, ${foundVenue.state} ${foundVenue.zipCode}`;
+
+          // Prepare venue data, excluding fields not available in localStorage
+          const venueData = {
+            ...foundVenue,
+            location: locationString,
+            // Exclude rating, reviews, and detailed contact (phone, email) for now
+            // In a real app, fetch these from backend if needed
+            rating: null, // Set to null or a default value
+            reviews: null, // Set to null or a default value
+            contact: {
+              // Provide minimal contact info if hostName is available
+              hostId: foundVenue.hostId,
+              hostName: foundVenue.hostName,
+              phone: null, // Not stored in localStorage
+              email: null, // Not stored in localStorage
+            },
+          };
+
+          setVenue(venueData);
+        } else {
+          setError(`Venue with ID ${id} not found.`);
+        }
       } catch (err) {
-        setError('Failed to load venue details. Please try again later.');
-        console.error('Error fetching venue:', err);
+        setError("Failed to load venue details. Please try again later.");
+        console.error("Error fetching venue:", err);
       } finally {
         setLoading(false);
       }
@@ -87,13 +100,13 @@ const VenueDetails = () => {
   // Add keyboard event listener for Escape key
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && showFullGallery) {
+      if (e.key === "Escape" && showFullGallery) {
         setShowFullGallery(false);
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [showFullGallery]);
 
   const nextImage = () => {
@@ -104,7 +117,9 @@ const VenueDetails = () => {
 
   const prevImage = () => {
     if (venue) {
-      setCurrentImageIndex((prev) => (prev - 1 + venue.images.length) % venue.images.length);
+      setCurrentImageIndex(
+        (prev) => (prev - 1 + venue.images.length) % venue.images.length
+      );
     }
   };
 
@@ -115,30 +130,30 @@ const VenueDetails = () => {
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    setBookingError('');
-    setPaymentError('');
+    setBookingError("");
+    setPaymentError("");
     setIsSubmitting(true);
 
     try {
       // Check if user is authenticated
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        navigate('/login', { state: { from: `/venues/${id}` } });
+        navigate("/login", { state: { from: `/venues/${id}` } });
         return;
       }
 
       // Validate booking data
       if (!bookingData.date || !bookingData.guests) {
-        throw new Error('Please fill in all required fields');
+        throw new Error("Please fill in all required fields");
       }
 
       // Validate date is not in the past
       const selectedDate = new Date(bookingData.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (selectedDate < today) {
-        throw new Error('Please select a future date');
+        throw new Error("Please select a future date");
       }
 
       // Validate guest count
@@ -154,35 +169,36 @@ const VenueDetails = () => {
 
       // Validate payment method
       if (!bookingData.paymentMethod) {
-        throw new Error('Please select a payment method');
+        throw new Error("Please select a payment method");
       }
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setBookingSuccess(true);
       setBookingData({
-        date: '',
-        guests: '',
-        paymentMethod: ''
+        date: "",
+        guests: "",
+        paymentMethod: "",
       });
       setShowPayment(false);
 
       // Dispatch custom event for notification
-      window.dispatchEvent(new CustomEvent('venueBooked', {
-        detail: {
-          venue: venue.name,
-          date: bookingData.date
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("venueBooked", {
+          detail: {
+            venue: venue.name,
+            date: bookingData.date,
+          },
+        })
+      );
 
       // Reset success message after 3 seconds
       setTimeout(() => {
         setBookingSuccess(false);
       }, 3000);
-
     } catch (error) {
-      if (error.message.includes('payment')) {
+      if (error.message.includes("payment")) {
         setPaymentError(error.message);
       } else {
         setBookingError(error.message);
@@ -194,21 +210,33 @@ const VenueDetails = () => {
 
   const handleBookingChange = (e) => {
     const { name, value } = e.target;
-    setBookingData(prev => ({
+    setBookingData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user makes changes
     if (bookingError) {
-      setBookingError('');
+      setBookingError("");
     }
   };
 
   const handleImageError = (index) => {
-    setImageError(prev => ({
+    setImageError((prev) => ({
       ...prev,
-      [index]: true
+      [index]: true,
     }));
+  };
+
+  const handleMessageHost = () => {
+    // In a real application, you would determine the conversation ID here.
+    // This might involve checking if a conversation already exists between the current user and the host,
+    // or creating a new one. The conversation ID could be based on the user IDs and the venue ID.
+    const mockConversationId = `venue_${venue.id}_user_${
+      localStorage.getItem("userId") || "guest"
+    }`;
+
+    // Navigate to the user's chat window for this conversation
+    navigate(`/user/messages/${mockConversationId}`);
   };
 
   if (loading) {
@@ -244,18 +272,22 @@ const VenueDetails = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[#2d3450] border-b border-teal-700/40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="p-2 hover:bg-[#232946] rounded-full transition-colors"
           >
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={() => setIsFavorite(!isFavorite)}
               className="p-2 hover:bg-[#232946] rounded-full transition-colors"
             >
-              <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-300'}`} />
+              <Heart
+                className={`w-6 h-6 ${
+                  isFavorite ? "fill-red-500 text-red-500" : "text-gray-300"
+                }`}
+              />
             </button>
             <button className="p-2 hover:bg-[#232946] rounded-full transition-colors">
               <Share2 className="w-6 h-6 text-gray-300" />
@@ -276,14 +308,14 @@ const VenueDetails = () => {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
               >
-                <div 
+                <div
                   className={`relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer shadow-md ${
-                    index === currentImageIndex ? 'ring-2 ring-teal-500' : ''
+                    index === currentImageIndex ? "ring-2 ring-teal-500" : ""
                   }`}
                   onClick={() => handleImageClick(index)}
                 >
-                  <img 
-                    src={imageError[index] ? '/images/placeholder.jpg' : image} 
+                  <img
+                    src={imageError[index] ? "/images/placeholder.jpg" : image}
                     alt={`${venue.name} - Image ${index + 1}`}
                     onError={() => handleImageError(index)}
                     className="w-full h-full object-cover"
@@ -303,14 +335,16 @@ const VenueDetails = () => {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
               >
-                <div 
+                <div
                   className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer shadow-md bg-gray-100"
                   onClick={() => setShowFullGallery(true)}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-teal-500/80 to-teal-600/80 flex items-center justify-center">
                     <div className="text-center text-white">
                       <p className="text-lg font-semibold mb-1">View All</p>
-                      <p className="text-sm opacity-90">{venue.images.length} Photos</p>
+                      <p className="text-sm opacity-90">
+                        {venue.images.length} Photos
+                      </p>
                       <div className="mt-2 p-2 bg-white/20 rounded-full inline-block">
                         <ChevronRight className="w-5 h-5" />
                       </div>
@@ -330,7 +364,7 @@ const VenueDetails = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-[#2d3450] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="relative">
                 <img
@@ -353,7 +387,7 @@ const VenueDetails = () => {
                 >
                   <Heart
                     className={`w-6 h-6 ${
-                      isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'
+                      isFavorite ? "text-red-500 fill-red-500" : "text-gray-400"
                     }`}
                   />
                 </button>
@@ -362,14 +396,18 @@ const VenueDetails = () => {
               <div className="p-8">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">{venue.name}</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2">
+                      {venue.name}
+                    </h2>
                     <div className="flex items-center text-gray-300">
                       <MapPin className="w-5 h-5 mr-2 text-teal-400" />
                       <span>{venue.location}</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-teal-400">${venue.price}/hour</div>
+                    <div className="text-2xl font-bold text-teal-400">
+                      ${venue.price}/hour
+                    </div>
                     <div className="flex items-center justify-end text-gray-300">
                       <Star className="w-5 h-5 mr-1 text-yellow-400" />
                       <span>{venue.rating} Rating</span>
@@ -381,10 +419,15 @@ const VenueDetails = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-4">Features</h3>
+                    <h3 className="text-xl font-semibold text-white mb-4">
+                      Features
+                    </h3>
                     <div className="space-y-3">
                       {venue.features.map((feature, index) => (
-                        <div key={index} className="flex items-center text-gray-300">
+                        <div
+                          key={index}
+                          className="flex items-center text-gray-300"
+                        >
                           <Check className="w-5 h-5 mr-2 text-teal-400" />
                           <span>{feature}</span>
                         </div>
@@ -393,7 +436,9 @@ const VenueDetails = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-4">Contact Information</h3>
+                    <h3 className="text-xl font-semibold text-white mb-4">
+                      Contact Information
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex items-center text-gray-300">
                         <Phone className="w-5 h-5 mr-2 text-teal-400" />
@@ -431,19 +476,23 @@ const VenueDetails = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
+                          Date
+                        </label>
                         <input
                           type="date"
                           name="date"
                           value={bookingData.date}
                           onChange={handleBookingChange}
-                          min={new Date().toISOString().split('T')[0]}
+                          min={new Date().toISOString().split("T")[0]}
                           required
                           className="w-full px-4 py-2 bg-[#232946] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-1">Number of Guests</label>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
+                          Number of Guests
+                        </label>
                         <input
                           type="number"
                           name="guests"
@@ -459,19 +508,25 @@ const VenueDetails = () => {
 
                     {showPayment && (
                       <div className="space-y-4 pt-4 border-t border-gray-700">
-                        <h4 className="font-semibold text-white">Payment Method</h4>
+                        <h4 className="font-semibold text-white">
+                          Payment Method
+                        </h4>
                         <div className="space-y-3">
                           <label className="flex items-center space-x-3 p-3 border border-gray-700 rounded-lg cursor-pointer hover:bg-[#232946]">
                             <input
                               type="radio"
                               name="paymentMethod"
                               value="esewa"
-                              checked={bookingData.paymentMethod === 'esewa'}
+                              checked={bookingData.paymentMethod === "esewa"}
                               onChange={handleBookingChange}
                               className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                             />
                             <div className="flex items-center space-x-2">
-                              <img src="/images/esewa.png" alt="eSewa" className="h-6" />
+                              <img
+                                src="/images/esewa.png"
+                                alt="eSewa"
+                                className="h-6"
+                              />
                               <span className="text-gray-300">eSewa</span>
                             </div>
                           </label>
@@ -481,12 +536,16 @@ const VenueDetails = () => {
                               type="radio"
                               name="paymentMethod"
                               value="khalti"
-                              checked={bookingData.paymentMethod === 'khalti'}
+                              checked={bookingData.paymentMethod === "khalti"}
                               onChange={handleBookingChange}
                               className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                             />
                             <div className="flex items-center space-x-2">
-                              <img src="/images/khalti.png" alt="Khalti" className="h-6" />
+                              <img
+                                src="/images/khalti.png"
+                                alt="Khalti"
+                                className="h-6"
+                              />
                               <span className="text-gray-300">Khalti</span>
                             </div>
                           </label>
@@ -496,12 +555,18 @@ const VenueDetails = () => {
                               type="radio"
                               name="paymentMethod"
                               value="connectips"
-                              checked={bookingData.paymentMethod === 'connectips'}
+                              checked={
+                                bookingData.paymentMethod === "connectips"
+                              }
                               onChange={handleBookingChange}
                               className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                             />
                             <div className="flex items-center space-x-2">
-                              <img src="/images/connectips.png" alt="ConnectIPS" className="h-6" />
+                              <img
+                                src="/images/connectips.png"
+                                alt="ConnectIPS"
+                                className="h-6"
+                              />
                               <span className="text-gray-300">ConnectIPS</span>
                             </div>
                           </label>
@@ -511,12 +576,14 @@ const VenueDetails = () => {
                               type="radio"
                               name="paymentMethod"
                               value="cash"
-                              checked={bookingData.paymentMethod === 'cash'}
+                              checked={bookingData.paymentMethod === "cash"}
                               onChange={handleBookingChange}
                               className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                             />
                             <div className="flex items-center space-x-2">
-                              <span className="text-gray-300">Cash on Arrival</span>
+                              <span className="text-gray-300">
+                                Cash on Arrival
+                              </span>
                             </div>
                           </label>
                         </div>
@@ -524,11 +591,17 @@ const VenueDetails = () => {
                         <div className="bg-[#232946] p-4 rounded-lg border border-gray-700">
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-gray-300">Venue Price</span>
-                            <span className="font-medium text-white">{venue.price}</span>
+                            <span className="font-medium text-white">
+                              {venue.price}
+                            </span>
                           </div>
                           <div className="flex justify-between text-sm mb-2">
-                            <span className="text-gray-300">Service Charge</span>
-                            <span className="font-medium text-white">{(venue.price * 0.1).toFixed(2)}</span>
+                            <span className="text-gray-300">
+                              Service Charge
+                            </span>
+                            <span className="font-medium text-white">
+                              {(venue.price * 0.1).toFixed(2)}
+                            </span>
                           </div>
                           <div className="border-t border-gray-700 pt-2 mt-2">
                             <div className="flex justify-between font-semibold text-white">
@@ -551,9 +624,9 @@ const VenueDetails = () => {
                           Processing...
                         </>
                       ) : showPayment ? (
-                        'Complete Reservation'
+                        "Complete Reservation"
                       ) : (
-                        'Reserve Now'
+                        "Reserve Now"
                       )}
                     </button>
                   </form>
@@ -569,7 +642,9 @@ const VenueDetails = () => {
           <div className="lg:col-span-2">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">{venue.name}</h1>
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  {venue.name}
+                </h1>
                 <div className="flex items-center space-x-4 text-gray-300">
                   <div className="flex items-center">
                     <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
@@ -584,7 +659,9 @@ const VenueDetails = () => {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-teal-400">{venue.price}</p>
+                <p className="text-2xl font-bold text-teal-400">
+                  {venue.price}
+                </p>
                 <p className="text-gray-300">per event</p>
               </div>
             </div>
@@ -595,22 +672,30 @@ const VenueDetails = () => {
                   <Users className="w-6 h-6 text-teal-400" />
                   <div>
                     <p className="text-sm text-gray-300">Capacity</p>
-                    <p className="font-semibold text-white">{venue.capacity} people</p>
+                    <p className="font-semibold text-white">
+                      {venue.capacity} people
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-6 h-6 text-teal-400" />
                   <div>
                     <p className="text-sm text-gray-300">Available Dates</p>
-                    <p className="font-semibold text-white">{venue.availableDates.length} dates</p>
+                    <p className="font-semibold text-white">
+                      {venue.availableDates.length} dates
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">About this venue</h2>
-              <p className="text-gray-300 leading-relaxed">{venue.description}</p>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                About this venue
+              </h2>
+              <p className="text-gray-300 leading-relaxed">
+                {venue.description}
+              </p>
             </div>
 
             <div className="mb-8">
@@ -618,7 +703,7 @@ const VenueDetails = () => {
               <div className="grid grid-cols-2 gap-4">
                 {venue.features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-2">
-                    {feature === 'WiFi' ? (
+                    {feature === "WiFi" ? (
                       <Wifi className="w-6 h-6 text-teal-400" />
                     ) : (
                       <Music className="w-6 h-6 text-teal-400" />
@@ -630,7 +715,9 @@ const VenueDetails = () => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-white mb-4">Contact Information</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Contact Information
+              </h2>
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <Phone className="w-6 h-6 text-teal-400" />
@@ -642,12 +729,25 @@ const VenueDetails = () => {
                 </div>
               </div>
             </div>
+
+            {/* Message Host Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleMessageHost}
+              className="mt-4 px-6 py-3 bg-sky-500 text-white rounded-xl font-semibold shadow-lg hover:bg-sky-600 transition-colors duration-200 flex items-center space-x-2"
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span>Message Host</span>
+            </motion.button>
           </div>
 
           {/* Right Column - Booking Form */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 bg-[#2d3450] rounded-2xl border border-teal-700/40 p-6 shadow-lg">
-              <h3 className="text-xl font-bold text-white mb-4">Book this venue</h3>
+              <h3 className="text-xl font-bold text-white mb-4">
+                Book this venue
+              </h3>
               <form onSubmit={handleBookingSubmit} className="space-y-4">
                 {bookingError && (
                   <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
@@ -665,19 +765,23 @@ const VenueDetails = () => {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Date
+                  </label>
                   <input
                     type="date"
                     name="date"
                     value={bookingData.date}
                     onChange={handleBookingChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split("T")[0]}
                     required
                     className="w-full px-4 py-2 bg-[#232946] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Number of Guests</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Number of Guests
+                  </label>
                   <input
                     type="number"
                     name="guests"
@@ -702,12 +806,16 @@ const VenueDetails = () => {
                           type="radio"
                           name="paymentMethod"
                           value="connectips"
-                          checked={bookingData.paymentMethod === 'connectips'}
+                          checked={bookingData.paymentMethod === "connectips"}
                           onChange={handleBookingChange}
                           className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                         />
                         <div className="flex items-center space-x-2">
-                          <img src="/images/connectips.png" alt="ConnectIPS" className="h-6" />
+                          <img
+                            src="/images/connectips.png"
+                            alt="ConnectIPS"
+                            className="h-6"
+                          />
                           <span className="text-gray-300">ConnectIPS</span>
                         </div>
                       </label>
@@ -717,7 +825,7 @@ const VenueDetails = () => {
                           type="radio"
                           name="paymentMethod"
                           value="cash"
-                          checked={bookingData.paymentMethod === 'cash'}
+                          checked={bookingData.paymentMethod === "cash"}
                           onChange={handleBookingChange}
                           className="h-4 w-4 text-teal-400 focus:ring-teal-500"
                         />
@@ -730,11 +838,15 @@ const VenueDetails = () => {
                     <div className="bg-[#232946] p-4 rounded-lg border border-gray-700">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-gray-300">Venue Price</span>
-                        <span className="font-medium text-white">{venue.price}</span>
+                        <span className="font-medium text-white">
+                          {venue.price}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-gray-300">Service Charge</span>
-                        <span className="font-medium text-white">{(venue.price * 0.1).toFixed(2)}</span>
+                        <span className="font-medium text-white">
+                          {(venue.price * 0.1).toFixed(2)}
+                        </span>
                       </div>
                       <div className="border-t border-gray-700 pt-2 mt-2">
                         <div className="flex justify-between font-semibold text-white">
@@ -757,9 +869,9 @@ const VenueDetails = () => {
                       Processing...
                     </>
                   ) : showPayment ? (
-                    'Complete Reservation'
+                    "Complete Reservation"
                   ) : (
-                    'Reserve Now'
+                    "Reserve Now"
                   )}
                 </button>
               </form>
@@ -771,4 +883,4 @@ const VenueDetails = () => {
   );
 };
 
-export default VenueDetails; 
+export default VenueDetails;

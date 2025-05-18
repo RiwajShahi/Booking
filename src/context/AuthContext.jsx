@@ -1,30 +1,31 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     // Check localStorage on initial load
-    const savedUser = localStorage.getItem('user');
+    const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
   const login = (userData) => {
     setUser(userData);
     // Save to localStorage
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    // Remove from localStorage
-    localStorage.removeItem('user');
+    // Remove all auth-related data from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   const updateUserProfile = (profileData) => {
     const updatedUser = { ...user, ...profileData, isOnboarded: true };
     setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   // Optional: Check if the user session is still valid
@@ -34,9 +35,9 @@ export const AuthProvider = ({ children }) => {
         try {
           // Here you would typically make an API call to verify the session
           // For now, we'll just keep the user logged in
-          console.log('User session is valid');
+          console.log("User session is valid");
         } catch (error) {
-          console.error('Session invalid:', error);
+          console.error("Session invalid:", error);
           logout();
         }
       }
@@ -55,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
 
 const AddVenue = () => {
   const navigate = useNavigate();
@@ -10,63 +10,63 @@ const AddVenue = () => {
   const [errors, setErrors] = useState({});
 
   const [venueData, setVenueData] = useState({
-    name: '',
-    description: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    price: '',
-    capacity: '',
+    name: "",
+    description: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    price: "",
+    capacity: "",
     amenities: [],
     images: [],
-    rules: '',
+    rules: "",
     availability: {
-      checkIn: '15:00',
-      checkOut: '11:00'
-    }
+      checkIn: "15:00",
+      checkOut: "11:00",
+    },
   });
 
   const amenitiesList = [
-    'WiFi',
-    'Parking',
-    'Kitchen',
-    'Air Conditioning',
-    'Pool',
-    'Gym',
-    'Security',
-    'Pets Allowed',
-    'Wheelchair Accessible'
+    "WiFi",
+    "Parking",
+    "Kitchen",
+    "Air Conditioning",
+    "Pool",
+    "Gym",
+    "Security",
+    "Pets Allowed",
+    "Wheelchair Accessible",
   ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setVenueData(prev => ({
+    setVenueData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const handleAmenityChange = (amenity) => {
-    setVenueData(prev => ({
+    setVenueData((prev) => ({
       ...prev,
       amenities: prev.amenities.includes(amenity)
-        ? prev.amenities.filter(a => a !== amenity)
-        : [...prev.amenities, amenity]
+        ? prev.amenities.filter((a) => a !== amenity)
+        : [...prev.amenities, amenity],
     }));
   };
 
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     const imageUrls = [];
-    
+
     for (const file of files) {
       try {
         const reader = new FileReader();
@@ -77,27 +77,29 @@ const AddVenue = () => {
         });
         imageUrls.push(imageUrl);
       } catch (error) {
-        console.error('Error reading image:', error);
+        console.error("Error reading image:", error);
       }
     }
-    
-    setVenueData(prev => ({
+
+    setVenueData((prev) => ({
       ...prev,
-      images: imageUrls
+      images: imageUrls,
     }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!venueData.name.trim()) newErrors.name = 'Venue name is required';
-    if (!venueData.description.trim()) newErrors.description = 'Description is required';
-    if (!venueData.address.trim()) newErrors.address = 'Address is required';
-    if (!venueData.city.trim()) newErrors.city = 'City is required';
-    if (!venueData.state.trim()) newErrors.state = 'State is required';
-    if (!venueData.zipCode.trim()) newErrors.zipCode = 'Zip code is required';
-    if (!venueData.price) newErrors.price = 'Price is required';
-    if (!venueData.capacity) newErrors.capacity = 'Capacity is required';
-    if (venueData.images.length === 0) newErrors.images = 'At least one image is required';
+    if (!venueData.name.trim()) newErrors.name = "Venue name is required";
+    if (!venueData.description.trim())
+      newErrors.description = "Description is required";
+    if (!venueData.address.trim()) newErrors.address = "Address is required";
+    if (!venueData.city.trim()) newErrors.city = "City is required";
+    if (!venueData.state.trim()) newErrors.state = "State is required";
+    if (!venueData.zipCode.trim()) newErrors.zipCode = "Zip code is required";
+    if (!venueData.price) newErrors.price = "Price is required";
+    if (!venueData.capacity) newErrors.capacity = "Capacity is required";
+    if (venueData.images.length === 0)
+      newErrors.images = "At least one image is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -118,44 +120,67 @@ const AddVenue = () => {
         city: venueData.city,
         state: venueData.state,
         zipCode: venueData.zipCode,
-        price: venueData.price,
-        capacity: venueData.capacity,
+        price: parseFloat(venueData.price),
+        weekendPrice: parseFloat(venueData.price) * 1.2, // 20% higher for weekends
+        capacity: parseInt(venueData.capacity),
         amenities: venueData.amenities,
-        images: venueData.images, // Now contains base64 image URLs
+        images: venueData.images,
         rules: venueData.rules,
         availability: venueData.availability,
         hostId: user.id,
         hostName: `${user.firstName} ${user.lastName}`,
-        createdAt: new Date().toISOString()
+        status: "draft", // draft, published, or archived
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        stats: {
+          views: 0,
+          saves: 0,
+          inquiries: 0,
+          bookings: 0,
+        },
+        settings: {
+          instantBook: false,
+          autoReply: false,
+        },
       };
 
       // Get existing venues from localStorage
       let existingVenues = [];
       try {
-        const storedVenues = localStorage.getItem('venues');
+        const storedVenues = localStorage.getItem("venues");
         if (storedVenues) {
           existingVenues = JSON.parse(storedVenues);
         }
       } catch (error) {
-        console.error('Error reading from localStorage:', error);
+        console.error("Error reading from localStorage:", error);
       }
-      
+
       // Add new venue to the array
       const updatedVenues = [...existingVenues, venue];
-      
-      // Save updated venues array to localStorage
-      localStorage.setItem('venues', JSON.stringify(updatedVenues));
-      
-      // Log the saved venues for debugging
-      console.log('Saved venue:', venue);
-      console.log('All venues in localStorage:', updatedVenues);
 
-      // Redirect to venues page after successful submission
-      navigate('/venues', { replace: true });
+      // Save updated venues array to localStorage
+      localStorage.setItem("venues", JSON.stringify(updatedVenues));
+
+      // Also save to hostListings for the host dashboard
+      let hostListings = [];
+      try {
+        const storedHostListings = localStorage.getItem("hostListings");
+        if (storedHostListings) {
+          hostListings = JSON.parse(storedHostListings);
+        }
+      } catch (error) {
+        console.error("Error reading hostListings from localStorage:", error);
+      }
+
+      const updatedHostListings = [...hostListings, venue];
+      localStorage.setItem("hostListings", JSON.stringify(updatedHostListings));
+
+      // Redirect to the new listing editor
+      navigate(`/host/listings/${venue.id}/edit`, { replace: true });
     } catch (error) {
-      console.error('Failed to add venue:', error);
+      console.error("Failed to add venue:", error);
       setErrors({
-        submit: 'Failed to add venue. Please try again.'
+        submit: "Failed to add venue. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -163,8 +188,8 @@ const AddVenue = () => {
   };
 
   // If user is not a host, redirect to home
-  if (user?.role !== 'host') {
-    navigate('/');
+  if (user?.role !== "host") {
+    navigate("/");
     return null;
   }
 
@@ -173,8 +198,10 @@ const AddVenue = () => {
       <div className="max-w-3xl mx-auto">
         <div className="bg-white shadow sm:rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Venue</h2>
-            
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Add New Venue
+            </h2>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {errors.submit && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
@@ -184,7 +211,10 @@ const AddVenue = () => {
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Venue Name
                   </label>
                   <input
@@ -194,14 +224,19 @@ const AddVenue = () => {
                     value={venueData.name}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.name ? 'border-red-300' : 'border-gray-300'
+                      errors.name ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="price"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Price per Night ($)
                   </label>
                   <input
@@ -211,14 +246,19 @@ const AddVenue = () => {
                     value={venueData.price}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.price ? 'border-red-300' : 'border-gray-300'
+                      errors.price ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
+                  {errors.price && (
+                    <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="capacity"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Maximum Capacity
                   </label>
                   <input
@@ -228,14 +268,21 @@ const AddVenue = () => {
                     value={venueData.capacity}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.capacity ? 'border-red-300' : 'border-gray-300'
+                      errors.capacity ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.capacity && <p className="mt-1 text-sm text-red-600">{errors.capacity}</p>}
+                  {errors.capacity && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.capacity}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Address
                   </label>
                   <input
@@ -245,14 +292,21 @@ const AddVenue = () => {
                     value={venueData.address}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.address ? 'border-red-300' : 'border-gray-300'
+                      errors.address ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
+                  {errors.address && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.address}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     City
                   </label>
                   <input
@@ -262,14 +316,19 @@ const AddVenue = () => {
                     value={venueData.city}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.city ? 'border-red-300' : 'border-gray-300'
+                      errors.city ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                  {errors.city && (
+                    <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="state"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     State
                   </label>
                   <input
@@ -279,14 +338,19 @@ const AddVenue = () => {
                     value={venueData.state}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.state ? 'border-red-300' : 'border-gray-300'
+                      errors.state ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state}</p>}
+                  {errors.state && (
+                    <p className="mt-1 text-sm text-red-600">{errors.state}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="zipCode"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Zip Code
                   </label>
                   <input
@@ -296,15 +360,22 @@ const AddVenue = () => {
                     value={venueData.zipCode}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm ${
-                      errors.zipCode ? 'border-red-300' : 'border-gray-300'
+                      errors.zipCode ? "border-red-300" : "border-gray-300"
                     } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
-                  {errors.zipCode && <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>}
+                  {errors.zipCode && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.zipCode}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Description
                 </label>
                 <textarea
@@ -314,10 +385,14 @@ const AddVenue = () => {
                   value={venueData.description}
                   onChange={handleChange}
                   className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
+                    errors.description ? "border-red-300" : "border-gray-300"
                   } focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                 />
-                {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                {errors.description && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.description}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -334,7 +409,10 @@ const AddVenue = () => {
                         onChange={() => handleAmenityChange(amenity)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <label htmlFor={amenity} className="ml-2 block text-sm text-gray-900">
+                      <label
+                        htmlFor={amenity}
+                        className="ml-2 block text-sm text-gray-900"
+                      >
                         {amenity}
                       </label>
                     </div>
@@ -343,7 +421,10 @@ const AddVenue = () => {
               </div>
 
               <div>
-                <label htmlFor="images" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="images"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Venue Images
                 </label>
                 <input
@@ -355,7 +436,9 @@ const AddVenue = () => {
                   onChange={handleImageChange}
                   className="mt-1 block w-full"
                 />
-                {errors.images && <p className="mt-1 text-sm text-red-600">{errors.images}</p>}
+                {errors.images && (
+                  <p className="mt-1 text-sm text-red-600">{errors.images}</p>
+                )}
                 {venueData.images.length > 0 && (
                   <p className="mt-2 text-sm text-gray-500">
                     {venueData.images.length} image(s) selected
@@ -364,7 +447,10 @@ const AddVenue = () => {
               </div>
 
               <div>
-                <label htmlFor="rules" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="rules"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   House Rules
                 </label>
                 <textarea
@@ -380,7 +466,10 @@ const AddVenue = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="checkIn" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="checkIn"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Check-in Time
                   </label>
                   <input
@@ -394,7 +483,10 @@ const AddVenue = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="checkOut" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="checkOut"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Check-out Time
                   </label>
                   <input
@@ -416,7 +508,7 @@ const AddVenue = () => {
                   disabled={isLoading}
                   className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? 'Adding Venue...' : 'Add Venue'}
+                  {isLoading ? "Adding Venue..." : "Add Venue"}
                 </motion.button>
               </div>
             </form>
@@ -427,4 +519,4 @@ const AddVenue = () => {
   );
 };
 
-export default AddVenue; 
+export default AddVenue;

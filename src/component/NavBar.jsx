@@ -1,10 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, ChevronDown, Bell, Loader2, Check, Clock, MapPin, Building2, LogOut } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import Notification from './Notification';
-import { logout } from '../api/api';
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  User,
+  ChevronDown,
+  Bell,
+  Loader2,
+  Check,
+  Clock,
+  MapPin,
+  Building2,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import Notification from "./Notification";
+import { logout } from "../api/api";
 
 const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -12,7 +24,9 @@ const NavBar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = React.useState(!!localStorage.getItem('token'));
+  const [isLoggedIn, setIsLoggedIn] = React.useState(
+    !!localStorage.getItem("token")
+  );
   const { user, logout: authLogout } = useAuth();
   const navigate = useNavigate();
   const notificationRef = useRef(null);
@@ -20,41 +34,43 @@ const NavBar = () => {
 
   // Load notifications from localStorage on component mount
   const [notifications, setNotifications] = useState(() => {
-    const savedNotifications = localStorage.getItem('notifications');
-    return savedNotifications ? JSON.parse(savedNotifications) : [
-      {
-        id: 1,
-        title: "Booking Confirmed",
-        message: "Your booking for Grand Ballroom has been confirmed",
-        time: "2 hours ago",
-        read: false,
-        type: "booking"
-      },
-      {
-        id: 2,
-        title: "Payment Successful",
-        message: "Payment for Garden Pavilion has been processed",
-        time: "1 day ago",
-        read: true,
-        type: "payment"
-      },
-      {
-        id: 3,
-        title: "New Review",
-        message: "You received a new 5-star review",
-        time: "2 days ago",
-        read: true,
-        type: "review"
-      }
-    ];
+    const savedNotifications = localStorage.getItem("notifications");
+    return savedNotifications
+      ? JSON.parse(savedNotifications)
+      : [
+          {
+            id: 1,
+            title: "Booking Confirmed",
+            message: "Your booking for Grand Ballroom has been confirmed",
+            time: "2 hours ago",
+            read: false,
+            type: "booking",
+          },
+          {
+            id: 2,
+            title: "Payment Successful",
+            message: "Payment for Garden Pavilion has been processed",
+            time: "1 day ago",
+            read: true,
+            type: "payment",
+          },
+          {
+            id: 3,
+            title: "New Review",
+            message: "You received a new 5-star review",
+            time: "2 days ago",
+            read: true,
+            type: "review",
+          },
+        ];
   });
 
   // Save notifications to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('notifications', JSON.stringify(notifications));
+    localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Listen for custom events from venue bookings
   useEffect(() => {
@@ -65,28 +81,26 @@ const NavBar = () => {
         message: `Your booking for ${event.detail.venue} on ${event.detail.date} has been received`,
         time: "Just now",
         read: false,
-        type: "booking"
+        type: "booking",
       };
-      setNotifications(prev => [newNotification, ...prev]);
+      setNotifications((prev) => [newNotification, ...prev]);
     };
 
-    window.addEventListener('venueBooked', handleVenueBooked);
-    return () => window.removeEventListener('venueBooked', handleVenueBooked);
+    window.addEventListener("venueBooked", handleVenueBooked);
+    return () => window.removeEventListener("venueBooked", handleVenueBooked);
   }, []);
 
   const markAsRead = (id) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id
-          ? { ...notification, read: true }
-          : notification
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
       )
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notification => ({ ...notification, read: true }))
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true }))
     );
   };
 
@@ -97,13 +111,16 @@ const NavBar = () => {
   // Close notification dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
         setIsNotificationOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Mock popular destinations data
@@ -114,8 +131,8 @@ const NavBar = () => {
       venues: [
         { id: 1, name: "Grand Ballroom", count: 12 },
         { id: 2, name: "Skyline Terrace", count: 8 },
-        { id: 3, name: "Central Park Pavilion", count: 5 }
-      ]
+        { id: 3, name: "Central Park Pavilion", count: 5 },
+      ],
     },
     {
       id: 2,
@@ -123,8 +140,8 @@ const NavBar = () => {
       venues: [
         { id: 4, name: "Hollywood Hills", count: 15 },
         { id: 5, name: "Beachside Venue", count: 10 },
-        { id: 6, name: "Downtown LA Hall", count: 7 }
-      ]
+        { id: 6, name: "Downtown LA Hall", count: 7 },
+      ],
     },
     {
       id: 3,
@@ -132,9 +149,9 @@ const NavBar = () => {
       venues: [
         { id: 7, name: "Lakefront Center", count: 9 },
         { id: 8, name: "Magnificent Mile", count: 6 },
-        { id: 9, name: "Millennium Park", count: 4 }
-      ]
-    }
+        { id: 9, name: "Millennium Park", count: 4 },
+      ],
+    },
   ];
 
   useEffect(() => {
@@ -143,8 +160,8 @@ const NavBar = () => {
       setIsScrolled(scrollPosition > 20);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = async () => {
@@ -156,12 +173,15 @@ const NavBar = () => {
       // Add a small delay to show the loading animation
       setTimeout(() => {
         setIsLoggingOut(false);
-        // Refresh the page after logout
-        window.location.reload();
+        // Clear all auth-related data
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        // Refresh the page and redirect to home
+        window.location.href = "/";
       }, 500);
     } catch (error) {
       setIsLoggingOut(false);
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -169,7 +189,7 @@ const NavBar = () => {
     e.preventDefault();
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   };
 
@@ -177,35 +197,60 @@ const NavBar = () => {
     return location.pathname === path;
   };
 
+  const [mode, setMode] = React.useState(
+    () => localStorage.getItem("mode") || "host"
+  );
+
+  React.useEffect(() => {
+    const handleStorage = () => {
+      setMode(localStorage.getItem("mode") || "host");
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  const handleBecomeHost = () => {
+    localStorage.setItem("role", "host");
+    localStorage.setItem("mode", "host");
+    setMode("host");
+    navigate("/host/dashboard");
+  };
+
+  const handleSwitchToHosting = () => {
+    localStorage.setItem("mode", "host");
+    setMode("host");
+    navigate("/host/dashboard");
+  };
+
   return (
     <>
-      <motion.nav 
+      <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
         className={`sticky top-0 z-[100] w-full transition-all duration-300 ${
-          isScrolled ? 'bg-white/90 backdrop-blur-md shadow-lg' : 'bg-white'
+          isScrolled ? "bg-white/90 backdrop-blur-md shadow-lg" : "bg-white"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-18 min-h-[4.5rem] py-2">
             {/* Logo Left */}
-            <div className="flex items-center flex-1">
-              <Link 
-                to="/" 
+            <div className="flex items-center">
+              <Link
+                to="/"
                 className="flex items-center space-x-3"
                 onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
               >
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="w-10 h-10 bg-sky-500 rounded-lg flex items-center justify-center shadow-md"
                 >
                   <span className="text-lg font-bold text-white">H</span>
                 </motion.div>
-                <motion.span 
+                <motion.span
                   whileHover={{ scale: 1.02 }}
                   className="text-lg font-bold text-gray-900"
                 >
@@ -219,7 +264,9 @@ const NavBar = () => {
               <Link
                 to="/"
                 className={`text-base font-medium transition-colors duration-200 ${
-                  isActive('/') ? 'text-sky-600' : 'text-gray-700 hover:text-sky-500'
+                  isActive("/")
+                    ? "text-sky-600"
+                    : "text-gray-700 hover:text-sky-500"
                 }`}
               >
                 Home
@@ -227,7 +274,9 @@ const NavBar = () => {
               <Link
                 to="/venues"
                 className={`text-base font-medium transition-colors duration-200 ${
-                  isActive('/venues') ? 'text-sky-600' : 'text-gray-700 hover:text-sky-500'
+                  isActive("/venues")
+                    ? "text-sky-600"
+                    : "text-gray-700 hover:text-sky-500"
                 }`}
               >
                 Venues
@@ -235,7 +284,9 @@ const NavBar = () => {
               <Link
                 to="/contact"
                 className={`text-base font-medium transition-colors duration-200 ${
-                  isActive('/contact') ? 'text-sky-600' : 'text-gray-700 hover:text-sky-500'
+                  isActive("/contact")
+                    ? "text-sky-600"
+                    : "text-gray-700 hover:text-sky-500"
                 }`}
               >
                 Contact
@@ -243,17 +294,26 @@ const NavBar = () => {
             </div>
 
             {/* Profile/Right Section */}
-            <div className="flex items-center justify-end flex-1 space-x-4">
-              {/* Become a Host Button */}
-              <Link
-                to="/become-host"
-                className="whitespace-nowrap flex px-4 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base"
-              >
-                Become a host
-              </Link>
+            <div className="flex items-center space-x-4">
+              {/* Become a Host or Switch to Hosting Button (Desktop) */}
+              {mode === "travel" ? (
+                <button
+                  onClick={handleSwitchToHosting}
+                  className="hidden md:flex whitespace-nowrap px-4 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base"
+                >
+                  Switch to Hosting
+                </button>
+              ) : (
+                <button
+                  onClick={handleBecomeHost}
+                  className="hidden md:flex whitespace-nowrap px-4 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base"
+                >
+                  Become a host
+                </button>
+              )}
               {/* Notification Button and Dropdown */}
               <div className="relative" ref={notificationRef}>
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsNotificationOpen(!isNotificationOpen)}
@@ -273,14 +333,26 @@ const NavBar = () => {
                 {isNotificationOpen && (
                   <div
                     className="absolute right-0 z-50 w-80 bg-[#2d3450] rounded-xl shadow-lg py-2 border border-gray-700"
-                    style={{ top: 'calc(100% + 0.5rem)' }}
+                    style={{ top: "calc(100% + 0.5rem)" }}
                   >
                     <div className="px-4 py-2 border-b border-gray-700 flex justify-between items-center">
-                      <h3 className="font-semibold text-white">Notifications</h3>
+                      <h3 className="font-semibold text-white">
+                        Notifications
+                      </h3>
                       {notifications.length > 0 && (
                         <div className="flex space-x-2">
-                          <button onClick={markAllAsRead} className="text-sm text-teal-400 hover:text-teal-300">Mark all as read</button>
-                          <button onClick={clearAllNotifications} className="text-sm text-red-400 hover:text-red-300">Clear all</button>
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-sm text-teal-400 hover:text-teal-300"
+                          >
+                            Mark all as read
+                          </button>
+                          <button
+                            onClick={clearAllNotifications}
+                            className="text-sm text-red-400 hover:text-red-300"
+                          >
+                            Clear all
+                          </button>
                         </div>
                       )}
                     </div>
@@ -289,16 +361,28 @@ const NavBar = () => {
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
-                            className={`px-4 py-3 hover:bg-[#232946] cursor-pointer ${!notification.read ? 'bg-teal-900/20' : ''}`}
+                            className={`px-4 py-3 hover:bg-[#232946] cursor-pointer ${
+                              !notification.read ? "bg-teal-900/20" : ""
+                            }`}
                             onClick={() => markAsRead(notification.id)}
                           >
                             <div className="flex items-start space-x-3">
                               <div className="flex-shrink-0">
-                                <div className={`w-2 h-2 rounded-full mt-2 ${notification.read ? 'bg-gray-300' : 'bg-teal-400'}`} />
+                                <div
+                                  className={`w-2 h-2 rounded-full mt-2 ${
+                                    notification.read
+                                      ? "bg-gray-300"
+                                      : "bg-teal-400"
+                                  }`}
+                                />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white">{notification.title}</p>
-                                <p className="text-sm text-gray-300">{notification.message}</p>
+                                <p className="text-sm font-medium text-white">
+                                  {notification.title}
+                                </p>
+                                <p className="text-sm text-gray-300">
+                                  {notification.message}
+                                </p>
                                 <div className="flex items-center mt-1 text-xs text-gray-400">
                                   <Clock className="w-3 h-3 mr-1" />
                                   {notification.time}
@@ -311,13 +395,15 @@ const NavBar = () => {
                           </div>
                         ))
                       ) : (
-                        <div className="px-4 py-3 text-center text-gray-400">No notifications</div>
+                        <div className="px-4 py-3 text-center text-gray-400">
+                          No notifications
+                        </div>
                       )}
                     </div>
                   </div>
                 )}
               </div>
-              
+
               {/* Profile Dropdown Button and Dropdown */}
               <div className="relative">
                 {user ? (
@@ -328,16 +414,19 @@ const NavBar = () => {
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       className="flex items-center space-x-2 p-1 rounded-full hover:bg-sky-100 transition-colors duration-200"
                     >
-                      <motion.div 
+                      <motion.div
                         whileHover={{ scale: 1.1 }}
                         className="w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center shadow-md"
                       >
                         <User className="w-6 h-6 text-white" />
                       </motion.div>
-                      <span className="text-gray-900 font-medium text-base">{user ? (user.name || user.email) : ''}</span>
+                      <span className="hidden md:block text-gray-900 font-medium text-base">
+                        {user ? user.name || user.email : ""}
+                      </span>
                       <motion.div
                         animate={{ rotate: isProfileOpen ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
+                        className="hidden md:block"
                       >
                         <ChevronDown className="w-4 h-4 text-gray-700" />
                       </motion.div>
@@ -345,10 +434,12 @@ const NavBar = () => {
                     {isProfileOpen && (
                       <div
                         className="absolute right-0 z-50 w-48 bg-[#2d3450] rounded-xl shadow-lg py-2 border border-gray-700"
-                        style={{ top: 'calc(100% + 0.5rem)' }}
+                        style={{ top: "calc(100% + 0.5rem)" }}
                       >
                         <div className="px-4 py-2 border-b border-gray-700">
-                          <p className="text-sm font-medium text-white">{user?.email || ''}</p>
+                          <p className="text-sm font-medium text-white">
+                            {user?.email || ""}
+                          </p>
                         </div>
                         <div className="py-1">
                           <Link
@@ -358,6 +449,12 @@ const NavBar = () => {
                           >
                             Profile
                           </Link>
+                          <button
+                            onClick={() => navigate("/cohost")}
+                            className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            Apply for Co-Host
+                          </button>
                           <button
                             onClick={handleLogout}
                             className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#232946] flex items-center transition-colors duration-200"
@@ -369,7 +466,7 @@ const NavBar = () => {
                                 Logging out...
                               </>
                             ) : (
-                              'Logout'
+                              "Logout"
                             )}
                           </button>
                         </div>
@@ -380,28 +477,28 @@ const NavBar = () => {
                   <div className="flex space-x-2">
                     <Link
                       to="/login"
-                      className="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                      className="hidden md:flex px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
                     >
                       Log In
                     </Link>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Mobile Menu Button */}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100/50 transition-colors duration-200"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5 text-gray-600" />
-              ) : (
-                <Menu className="w-5 h-5 text-gray-600" />
-              )}
-            </motion.button>
+              {/* Mobile Menu Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100/50 transition-colors duration-200"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <Menu className="w-5 h-5 text-gray-600" />
+                )}
+              </motion.button>
+            </div>
           </div>
         </div>
 
@@ -419,7 +516,7 @@ const NavBar = () => {
                 <Link
                   to="/"
                   className={`block px-4 py-2 text-gray-700 hover:bg-gray-50/50 hover:text-violet-600 rounded-lg transition-colors duration-200 ${
-                    isActive('/') ? 'text-violet-600' : ''
+                    isActive("/") ? "text-violet-600" : ""
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -428,7 +525,7 @@ const NavBar = () => {
                 <Link
                   to="/venues"
                   className={`block px-4 py-2 text-gray-700 hover:bg-gray-50/50 hover:text-violet-600 rounded-lg transition-colors duration-200 ${
-                    isActive('/venues') ? 'text-violet-600' : ''
+                    isActive("/venues") ? "text-violet-600" : ""
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -437,20 +534,34 @@ const NavBar = () => {
                 <Link
                   to="/contact"
                   className={`block px-4 py-2 text-gray-700 hover:bg-gray-50/50 hover:text-violet-600 rounded-lg transition-colors duration-200 ${
-                    isActive('/contact') ? 'text-violet-600' : ''
+                    isActive("/contact") ? "text-violet-600" : ""
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Contact
                 </Link>
-                {/* Become a Host Button (Mobile) */}
-                <Link
-                  to="/become-host"
-                  className="block px-4 py-2 bg-sky-500 text-white rounded-lg text-center hover:bg-sky-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Become a Host
-                </Link>
+                {/* Become a Host or Switch to Hosting Button (Mobile) */}
+                {mode === "travel" ? (
+                  <button
+                    onClick={() => {
+                      handleSwitchToHosting();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-2 bg-sky-500 text-white rounded-lg text-center hover:bg-sky-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                  >
+                    Switch to Hosting
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleBecomeHost();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-2 bg-sky-500 text-white rounded-lg text-center hover:bg-sky-600 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                  >
+                    Become a Host
+                  </button>
+                )}
                 {user && (
                   <Link
                     to="/profile"
@@ -475,7 +586,7 @@ const NavBar = () => {
                       <Link
                         to="/profile"
                         className={`block px-4 py-2 text-gray-700 hover:bg-gray-50/50 hover:text-violet-600 rounded-lg transition-colors duration-200 ${
-                          isActive('/profile') ? 'text-violet-600' : ''
+                          isActive("/profile") ? "text-violet-600" : ""
                         }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -495,7 +606,7 @@ const NavBar = () => {
                       >
                         My Bookings
                       </Link>
-                      <motion.button 
+                      <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {
