@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -31,134 +32,91 @@ import UserChatWindow from "./component/UserChatWindow";
 import ListingEditor from "./component/ListingEditor";
 
 // Protected Route component
-const ProtectedRoute = ({ children }) => {
+
+// Route configuration (cleaner organization)
+const routeConfig = [
+  // Public routes
+  { path: "/", element: <HomePage />, protected: false },
+  { path: "/login", element: <LoginPage />, protected: false },
+  { path: "/signUp", element: <SignUp />, protected: false },
+  { path: "/become-host", element: <BecomeHostFlow />, protected: false },
+  { path: "/venues", element: <VenuesPage />, protected: false },
+  { path: "/contact", element: <ContactPage />, protected: false },
+  { path: "/venues/:id", element: <VenueDetails />, protected: false },
+  { path: "/cohost", element: <CoHostApplication />, protected: false },
+
+  // Protected routes
+  { 
+    path: "/onboarding", element: <Onboarding />, protected: true 
+  
+  
+  },
+  { path: "/add-venue", element: <AddVenue />, protected: true },
+  { path: "/profile", element: <Profile />, protected: true },
+  { path: "/booking/:id", element: <BookingForm />, protected: true },
+  
+  // Host routes
+  { path: "/host/dashboard", element: <HostDashboard />, protected: true },
+  { path: "/host/reservations", element: <HostReservations />, protected: true },
+  { path: "/host/earnings", element: <HostEarnings />, protected: true },
+  { path: "/host/listings", element: <HostListings />, protected: true },
+  { path: "/host/listings/:id/edit", element: <ListingEditor />, protected: true },
+  { path: "/host/messages", element: <HostMessages />, protected: true },
+  { path: "/host/messages/:bookingId", element: <HostChatWindow />, protected: true },
+  
+  // User routes
+  { path: "/user/messages", element: <UserMessages />, protected: true },
+  { path: "/user/messages/:bookingId", element: <UserChatWindow />, protected: true },
+];
+
+function App() {
+  const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
-  if (!user) {
-    return <Navigate to="/login" />;
+  const location = useLocation();
+
+  //case 1: auth state still loading (show spinner)
+  if (user === undefined) {
+    return <LoadingSpinner />;
   }
+  
+
+  // Case 2: Not authnenticated redirect to login
+  if (!user?.isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Case3: authnticated but not onboarded allowOnly /onboarding
+  if (!user?.isOnboarded && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Case 4:already onboarded block access to /onboarding
+  if (location.pathname === '/onboarding' && user?.isOnboarded) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  //case 5: authenticated + onboarded allow access
   return children;
 };
 
-function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signUp" element={<SignUp />} />
-          <Route path="/become-host" element={<BecomeHostFlow />} />
-          <Route path="/" element={<HomePage />} />
-          <Route path="/venues" element={<VenuesPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/venues/:id" element={<VenueDetails />} />
-          <Route path="/cohost" element={<CoHostApplication />} />
-
-          {/* Protected routes */}
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/add-venue"
-            element={
-              <ProtectedRoute>
-                <AddVenue />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/dashboard"
-            element={
-              <ProtectedRoute>
-                <HostDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/reservations"
-            element={
-              <ProtectedRoute>
-                <HostReservations />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/earnings"
-            element={
-              <ProtectedRoute>
-                <HostEarnings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/listings"
-            element={
-              <ProtectedRoute>
-                <HostListings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/listings/:id/edit"
-            element={
-              <ProtectedRoute>
-                <ListingEditor />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/messages"
-            element={
-              <ProtectedRoute>
-                <HostMessages />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/messages/:bookingId"
-            element={
-              <ProtectedRoute>
-                <HostChatWindow />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/user/messages"
-            element={
-              <ProtectedRoute>
-                <UserMessages />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/user/messages/:bookingId"
-            element={
-              <ProtectedRoute>
-                <UserChatWindow />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/booking/:id"
-            element={
-              <ProtectedRoute>
-                <BookingForm />
-              </ProtectedRoute>
-            }
-          />
+          {routeConfig.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                route.protected ? (
+                  <ProtectedRoute>
+                    {route.element}
+                  </ProtectedRoute>
+                ) : (
+                  route.element
+                )
+              }
+            />
+          ))}
         </Routes>
       </AuthProvider>
     </Router>

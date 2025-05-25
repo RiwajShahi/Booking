@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { setAuthToken } from "../api/api"; // at top
 
 const AuthContext = createContext(null);
 
@@ -6,48 +7,96 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     // Check localStorage on initial load
     const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+    const token = localStorage.getItem("token");
 
-  const login = (userData) => {
-    setUser(userData);
-    // Save to localStorage
-    localStorage.setItem("user", JSON.stringify(userData));
+    try {
+      return savedUser
+        ? { ...JSON.parse(savedUser), isAuthenticated: !!token }
+        : null;
+    } catch (e) {
+      console.error("failed to parase user data", e);
+      return null;
+    }
+  });
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token); // ✅ Ensure token is set for all API calls
+    }
+  }, []);
+
+  const authenticate = (userData, token) => {
+    const completeUser = {
+      ...userData,
+      isAuthenticated: true,
+      isOnboarded: userData.isOnboarded || false,
+      token: token,
+    };
+
+    setUser(completeUser);
+    localStorage.setItem("user", JSON.stringify(completeUser));
+    localStorage.setItem("token", token);
   };
 
+  const login = (userData, token) => {
+    setAuthToken(token); // ✅ Ensures Axios is ready
+    authenticate(userData, token);
+  };
+
+  const signup = (userData, token) => {
+    setAuthToken(token); // ✅ Sets token in Axios
+    authenticate({ ...userData, isOnboarded: false }, token); // ✅ Force isOnboarded to false
+  };
+
+  //log out function
   const logout = () => {
     setUser(null);
-    // Remove all auth-related data from localStorage
     localStorage.removeItem("user");
     localStorage.removeItem("token");
   };
 
-  const updateUserProfile = (profileData) => {
-    const updatedUser = { ...user, ...profileData, isOnboarded: true };
+  //update user profile function
+  const updateUserProfile = (updateData) => {
+    if (!user) {
+      throw new Error("Cannot update profile - user not logged in");
+    }
+    const updatedUser = {
+      ...user,
+      ...updateData,
+    };
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
-  // Optional: Check if the user session is still valid
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (user) {
-        try {
-          // Here you would typically make an API call to verify the session
-          // For now, we'll just keep the user logged in
-          console.log("User session is valid");
-        } catch (error) {
-          console.error("Session invalid:", error);
-          logout();
-        }
-      }
-    };
+  const validateUser = () => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
 
-    checkAuth();
-  }, [user]);
+    if (!userData || !token) {
+      throw new Error("User not authenticated");
+    }
+    try {
+      const user = JSON.parse(userData);
+      if (!user?.id || user.token !== token) {
+        throw new Error("Invalid user session");
+      }
+      return user;
+    } catch (e) {
+      throw new Error("Invalid user data");
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUserProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        signup,
+        logout,
+        updateUserProfile,
+        validateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

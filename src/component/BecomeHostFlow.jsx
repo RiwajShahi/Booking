@@ -150,6 +150,7 @@ const BecomeHostFlow = () => {
 
   // Step 0: Hero/essentials/co-host page
   if (step === 0) {
+    
     return (
       <div className="relative min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-32 overflow-hidden">
         {/* Animated Gradient Overlay */}
